@@ -26,7 +26,7 @@ void sighandler() {
 
 int main(int argc, char *argv[]) {
 
-	struct passwd *passwddata; /* this has to be redefined in step 2 */
+	mypwent *passwddata; /* this has to be redefined in step 2 */
 	/* see pwent.h */
 
 	char important1[LENGTH] = "**IMPORTANT 1**";
