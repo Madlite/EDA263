@@ -11,8 +11,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <crypt.h>
-/* Uncomment next line in step 2 */
-/* #include "pwent.h" */
+#include "pwent.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -26,8 +25,8 @@ void sighandler() {
 
 int main(int argc, char *argv[]) {
 
-	mypwent *passwddata; /* this has to be redefined in step 2 */
-	/* see pwent.h */
+
+	mypwent *passwddata;
 
 	char important1[LENGTH] = "**IMPORTANT 1**";
 
@@ -49,11 +48,12 @@ int main(int argc, char *argv[]) {
 				important2);
 
 		printf("login: ");
-		fflush(NULL); /* Flush all  output buffers */
+		fflush(NULL); 	 /* Flush all  output buffers */
 		__fpurge(stdin); /* Purge any data in stdin buffer */
 
-		if (fgets(user, sizeof(user), stdin) == NULL) /* gets() is vulnerable to buffer */
+		if (fgets(user, sizeof(user), stdin) == NULL) /* gets() is vulnerable to buffer, changed to fgets()*/
 			exit(0); /*  overflow attacks.  */
+
 
 		/* check to see if important variable is intact after input of login name - do not remove */
 		printf("Value of variable 'important 1' after input of login name: %*.*s\n",
