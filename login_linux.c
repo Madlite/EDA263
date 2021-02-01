@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		 		LENGTH - 1, LENGTH - 1, important2);
 
 		user_pass = getpass(prompt);
-		passwddata = getpwnam(user);
+		*passwddata = getpwnam(user);
 
 		if (passwddata != NULL) {
 			/* You have to encrypt user_pass for this to work */
