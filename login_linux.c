@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 			/* You have to encrypt user_pass for this to work */
 			/* Don't forget to include the salt */
 
-			if (!strcmp(user_pass, passwddata->pw_passwd)) {
+			if (!strcmp(user_pass, passwddata->passwd)) {
 
 				printf(" You're in !\n");
 
