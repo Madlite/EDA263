@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
 		printf("Value of variable 'important 2' after input of login name: %*.*s\n",
 		 		LENGTH - 1, LENGTH - 1, important2);
 
-		user_pass = getpass(prompt);        //gets password from terminal
-		passwddata = getpwnam(user);        //checks password for 'user' in /etc/passwd
+		user_pass = getpass(prompt);        //gets input password from terminal
+		passwddata.passwd = getpwnam(user);        //checks password for 'user' in /etc/passwd
 																				//returns a pointer
 
 /* warning: assignment to ‘mypwent *’ {aka ‘struct <anonymous> *’}
