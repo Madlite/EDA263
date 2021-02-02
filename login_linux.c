@@ -18,15 +18,19 @@
 #define LENGTH 16
 
 void sighandler() {
-
-	/* add signalhandling routines here */
-	/* see 'man 2 signal' */
+	return; // Ignore signal
 }
 
 int main(int argc, char *argv[]) {
-
+	// IGNORE ALL SIGNALS
+	signal(SIGINT, &sighandler);
+	signal(SIGTERM, &sighandler);
+	signal(SIGQUIT, &sighandler);
+	signal(SIGTSTP, &sighandler);
 
 	mypwent *passwddata;
+
+	static const char SALT[] = "as";
 
 	char important1[LENGTH] = "**IMPORTANT 1**";
 
@@ -51,9 +55,11 @@ int main(int argc, char *argv[]) {
 		fflush(NULL); 	 /* Flush all  output buffers */
 		__fpurge(stdin); /* Purge any data in stdin buffer */
 
-		if (fgets(user, sizeof(user), stdin) == NULL) /* gets() is vulnerable to buffer, changed to fgets()*/
+		if (fgets(user, LENGTH, stdin) == NULL) /* gets() is vulnerable to buffer, changed to fgets()*/
 			exit(0); /*  overflow attacks.  */
 
+		// remove '\n'
+		user[strlen(user) - 1] = '\0';
 
 		/* check to see if important variable is intact after input of login name - do not remove */
 		printf("Value of variable 'important 1' after input of login name: %*.*s\n",
@@ -62,26 +68,72 @@ int main(int argc, char *argv[]) {
 		 		LENGTH - 1, LENGTH - 1, important2);
 
 		user_pass = getpass(prompt);        //gets input password from terminal
-		passwddata = getpwnam(user);        //checks password for 'user' in /etc/passwd
+		passwddata = mygetpwnam(user);      //checks password for 'user' in /etc/passwd
 																				//returns a pointer
 
-/* warning: assignment to ‘mypwent *’ {aka ‘struct <anonymous> *’}
-from incompatible pointer type ‘struct passwd *’ [-Wincompatible-pointer-types]*/
-
 		if (passwddata != NULL) {
-			/* You have to encrypt user_pass for this to work */
-			/* Don't forget to include the salt */
+			// Barrier against faulty password inputs
+			if(passwddata->pwfailed >= 5){
+				printf("PERMABANNED FROM LOGGING IN");
+				return 0;
+			}
 
-			if (!strcmp(user_pass, passwddata->passwd)) {
+			// Check if password is correct
+			if (!strcmp(crypt(user_pass, SALT), passwddata->passwd)) {
 
 				printf(" You're in !\n");
+				printf("Failed attempts: %d \n", passwddata->pwfailed);
+				passwddata->pwfailed = 0; // reset
 
-				/*  check UID, see setuid(2) */
-				/*  start a shell, use execve(2) */
+				passwddata->pwage += 1; // increment
 
+				mysetpwent(user, passwddata);
+
+				// FORCE UPDATING PASSWORD
+				if(passwddata->pwage > 10){
+					printf("WARNING PASSWORD TOO OLD, CHANGE NOW!\n");
+
+					// Get new pass
+					char new_passwd[LENGTH];
+					while(TRUE){
+						const char* new_pass = getpass("New Password: ");
+						const char* new_pass2 = getpass("Re-Enter New Password: ");
+						if(strcmp(new_pass, new_pass2) == 0){
+							strncpy(new_passwd, new_pass, LENGTH);
+							break;
+						}
+
+						printf("Password do not match, try again");
+					}
+
+					// Update variables
+					passwddata->passwd = crypt(new_passwd, SALT);
+					passwddata->pwage = 0;
+
+					mysetpwent(user, passwddata);
+
+					printf("Password has successfully been changed");
+				}
+
+				// Check uid
+				setuid(passwddata->uid);
+
+				// Start shell
+				execve("/bin/sh", argv, NULL);
+			}
+			else{
+				// Update if failed
+				passwddata->pwfailed += 1; // increment
+
+				mysetpwent(user, passwddata);
+
+				printf("Login Incorrect \n");
 			}
 		}
-		printf("Login Incorrect \n");
+		else{
+			printf("Login Incorrect \n");
+		}
+
 	}
 	return 0;
 }
