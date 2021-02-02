@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		 		LENGTH - 1, LENGTH - 1, important2);
 
 		user_pass = getpass(prompt);        //gets password from terminal
-		*passwddata = getpwnam(user);        //checks password for 'user' in /etc/passwd
+		passwddata = getpwnam(user);        //checks password for 'user' in /etc/passwd
 																				//returns a pointer
 
 /* warning: assignment to ‘mypwent *’ {aka ‘struct <anonymous> *’}
