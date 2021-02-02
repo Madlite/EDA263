@@ -72,7 +72,7 @@ from incompatible pointer type ‘struct passwd *’ [-Wincompatible-pointer-typ
 			/* You have to encrypt user_pass for this to work */
 			/* Don't forget to include the salt */
 
-			if (!strcmp(user_pass, passwddata->passwd)) {
+			if (!strcmp(user_pass, passwddata)) {
 
 				printf(" You're in !\n");
 
