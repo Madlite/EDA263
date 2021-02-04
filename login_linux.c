@@ -74,60 +74,66 @@ int main(int argc, char *argv[]) {
 		if (passwddata != NULL) {
 			// Barrier against faulty password inputs
 			if(passwddata->pwfailed >= 5){
-				printf("PERMABANNED FROM LOGGING IN");
-				return 0;
+				printf("Login Incorrect2 \n");
 			}
+			else{
+				// Check if password is correct
+				if (!strcmp(crypt(user_pass, SALT), passwddata->passwd)) {
 
-			// Check if password is correct
-			if (!strcmp(crypt(user_pass, SALT), passwddata->passwd)) {
+					printf(" You're in !\n");
+					printf("Failed attempts: %d \n", passwddata->pwfailed);
+					passwddata->pwfailed = 0; // reset
 
-				printf(" You're in !\n");
-				printf("Failed attempts: %d \n", passwddata->pwfailed);
-				passwddata->pwfailed = 0; // reset
-
-				passwddata->pwage += 1; // increment
-
-				mysetpwent(user, passwddata);
-
-				// FORCE UPDATING PASSWORD
-				if(passwddata->pwage > 10){
-					printf("WARNING PASSWORD TOO OLD, CHANGE NOW!\n");
-
-					// Get new pass
-					char new_passwd[LENGTH];
-					while(TRUE){
-						const char* new_pass = getpass("New Password: ");
-						const char* new_pass2 = getpass("Re-Enter New Password: ");
-						if(strcmp(new_pass, new_pass2) == 0){
-							strncpy(new_passwd, new_pass, LENGTH);
-							break;
-						}
-
-						printf("Password do not match, try again");
-					}
-
-					// Update variables
-					passwddata->passwd = crypt(new_passwd, SALT);
-					passwddata->pwage = 0;
+					passwddata->pwage += 1; // increment
 
 					mysetpwent(user, passwddata);
 
-					printf("Password has successfully been changed");
+					// FORCE UPDATING PASSWORD
+					if(passwddata->pwage > 10){
+						printf("WARNING PASSWORD TOO OLD, CHANGE NOW!\n");
+
+						// Get new pass
+						char new_passwd[LENGTH];
+						while(TRUE){
+							const char* new_pass = getpass("New Password: ");
+							const char* new_pass2 = getpass("Re-Enter New Password: ");
+							if(strcmp(new_pass, new_pass2) == 0){
+								strncpy(new_passwd, new_pass, LENGTH);
+								break;
+							}
+
+							printf("Password do not match, try again");
+						}
+
+						// Update variables
+						passwddata->passwd = crypt(new_passwd, SALT);
+						passwddata->pwage = 0;
+
+						mysetpwent(user, passwddata);
+
+						printf("Password has successfully been changed");
+					}
+
+					// Check uid
+					if(setuid(passwddata->uid) == -1){
+						printf("Failed to set UID\n");
+						continue;
+					}
+					else{
+						// Start shell
+						if(execve("/bin/sh", argv, NULL) == -1){
+							return -1;
+						}
+					}
 				}
+				else{
+					// Update if failed
+					passwddata->pwfailed += 1; // increment
 
-				// Check uid
-				setuid(passwddata->uid);
+					mysetpwent(user, passwddata);
 
-				// Start shell
-				execve("/bin/sh", argv, NULL);
-			}
-			else{
-				// Update if failed
-				passwddata->pwfailed += 1; // increment
-
-				mysetpwent(user, passwddata);
-
-				printf("Login Incorrect \n");
+					printf("Login Incorrect \n");
+				}
 			}
 		}
 		else{
