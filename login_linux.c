@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 		if (passwddata != NULL) {
 			// Barrier against faulty password inputs
 			if(passwddata->pwfailed >= 5){
-				printf("Login Incorrect2 \n");
+				printf("Login Incorrect \n");
 			}
 			else{
 				// Check if password is correct
